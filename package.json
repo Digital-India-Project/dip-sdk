@@ -41,6 +41,8 @@
     "test:integration": "vitest run tests/integration",
     "test:contract": "vitest run tests/contract",
     "test:compat": "vitest run tests/compatibility",
+    "test:security": "vitest run tests/security",
+    "test:mock-provider": "vitest run tests/mock-provider",
     "generate": "tsx scripts/generate-types.ts",
     "check:types-drift": "tsx scripts/generate-types.ts"
   },

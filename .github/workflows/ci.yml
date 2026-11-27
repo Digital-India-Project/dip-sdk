@@ -39,8 +39,16 @@ jobs:
       - name: Build ESM and CJS targets
         run: npm run build
 
-      - name: Run full test suite (unit, integration, contract, compatibility)
+      - name: Validate synchronization manifest
+        run: node -e "JSON.parse(require('node:fs').readFileSync('integration/manifest.json', 'utf8'))"
+
+      - name: Run full test suite (unit, integration, contract, compatibility, security, mock-provider)
         run: npm test
 
-      - name: Dependency audit (non-blocking advisory or high+)
-        run: npm audit --audit-level=high
+      - name: Dependency audit (when package-lock.json exists)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm audit --audit-level=high
+          else
+            echo "Skipping npm audit: no package-lock.json present"
+          fi

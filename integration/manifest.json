@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "Digital-India-Project/dip-sdk",
+  "package_name": "@digital-india/sdk",
+  "version": "0.2.0",
+  "branch": "development/sdk-foundation",
+  "private": true,
+  "runtime": {
+    "node": ">=20.0.0",
+    "verified_node": "v22.23.5",
+    "browsers": "Modern evergreen browsers supporting Fetch API, AbortController, and crypto.randomUUID",
+    "framework": "TypeScript SDK Library + Node HTTP Dev Server (src/server.ts)"
+  },
+  "package_exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "browser_safe": true
+    },
+    "./webhooks": {
+      "types": "./dist/esm/server-sdk.d.ts",
+      "import": "./dist/esm/server-sdk.js",
+      "require": "./dist/cjs/server-sdk.js",
+      "browser_safe": false,
+      "runtime_constraint": "Node.js server-only (uses node:crypto)"
+    }
+  },
+  "api_and_domain_contracts": {
+    "openapi_spec_path": "src/api-spec.json",
+    "openapi_version": "3.1.0",
+    "contract_version": "1.0.0-foundation",
+    "spec_sha256": "e1514bbfac84",
+    "verified_operation_count": 25,
+    "gateway_prefix": "/api/v1",
+    "resource_clients": [
+      "HealthClient",
+      "ServicesClient",
+      "ProductsClient",
+      "ApplicationsClient",
+      "WorkflowClient",
+      "DocumentsClient",
+      "PaymentsClient",
+      "WebhooksClient",
+      "IntegrationsClient",
+      "SandboxAuthClient"
+    ],
+    "deprecated_legacy_clients": [
+      "ApiClient (preserved Axios transport)",
+      "ApiSathiClient (legacy /api-sathi/status + DIPINDIA /api/v1/apisathi/status)",
+      "DatabaseClient (@deprecated; /data/:collection does not exist)",
+      "StorageClient (@deprecated; prefer DocumentsClient)"
+    ]
+  },
+  "authentication_and_authorization": {
+    "strategy": "Caller-supplied short-lived Bearer JWT via TokenProvider / RefreshableTokenProvider",
+    "origin_binding": "Bearer tokens attached only to configured trustedOrigin with redirect: manual",
+    "browser_token_storage": "In-memory only; localStorage/sessionStorage prohibited by policy",
+    "webhook_verification": "Server-only HMAC-SHA256 verification via @digital-india/sdk/webhooks (dip-api X-Webhook-Signature & Cashfree base64 HMAC)"
+  },
+  "database_and_storage_ownership": {
+    "owns_database": false,
+    "owns_object_storage": false,
+    "authority": "DIPINDIA / dip-api",
+    "notes": "External SDK holds zero direct DB or R2 credentials; file uploads use validated upload-intent signed URLs."
+  },
+  "environment_variables": [
+    "DIP_API_BASE_URL",
+    "PORT"
+  ],
+  "ecosystem_dependencies": {
+    "dip-api": {
+      "relationship": "Primary HTTP & OpenAPI 3.1.0 contract provider",
+      "compatible_version": "dip-api-portal@0.1.0 (1.0.0-foundation)"
+    },
+    "DIPINDIA": {
+      "relationship": "Authoritative platform backend; bridged via dip-api and ApiSathiClient.getGatewayStatus()",
+      "compatible_version": "main (worker /api/v1/*)"
+    },
+    "dip-core": {
+      "relationship": "Schema-aligned minor-unit Money and error code semantics (no runtime dependency)",
+      "compatible_version": "@dip/core@0.2.0"
+    },
+    "dip-security": {
+      "relationship": "Policy & redaction alignment (no runtime dependency)",
+      "compatible_version": "dip-security@0.1.0"
+    },
+    "dip-infrastructure": {
+      "relationship": "CI, Node 22 runtime, and secret-free env standards",
+      "compatible_version": "dip-infrastructure@1.0.0"
+    },
+    "dip-ui": {
+      "relationship": "Optional browser consumer via browser-safe @digital-india/sdk entrypoint",
+      "compatible_version": "@digital-india-project/dip-ui@0.4.0"
+    },
+    "dip-automation": {
+      "relationship": "Planned server-side consumer using RefreshableTokenProvider",
+      "compatible_version": "dip-automation@0.1.0"
+    },
+    "dip-docs": {
+      "relationship": "Synchronized SDK guide and OpenAPI 1.0.0-foundation snapshot",
+      "compatible_version": "dip-docs@0.1.0"
+    },
+    "dip-status": {
+      "relationship": "Compatible health probe consumer via client.health.getHealth()",
+      "compatible_version": "docs baseline"
+    }
+  },
+  "capabilities": {
+    "implemented": [
+      "DIPClient isomorphic Fetch transport with AbortSignal & timeouts",
+      "25 verified dip-api /api/v1 operations across 10 resource clients",
+      "Bounded exponential backoff retries, Retry-After, and strict payment idempotency",
+      "Typed DIPAPIError hierarchy and automatic header/URL/payload redaction",
+      "Async page/cursor pagination iterators",
+      "Server-only HMAC webhook signature verification & replay deduplication",
+      "Deterministic OpenAPI type generation & dual ESM/CJS builds"
+    ],
+    "mocked": [
+      "Integration HTTP gateway tests against local node:http mock server",
+      "Mock provider tests for sandbox GST/PAN adapters, Cashfree sandbox lifecycle, and DIPINDIA ApiSathi status"
+    ],
+    "blocked": [
+      "Live DigiLocker, Entity Locker, GST, PAN external provider connectors (planned_unconnected in dip-api)",
+      "Live Cashfree payment order execution and settlement",
+      "Organizations, Users (dip-api), Forms (dip-api), Notifications, Reports, and direct dip-api document download URLs"
+    ],
+    "untested": [
+      "Live network calls against production DIPINDIA or production dip-api endpoints (prohibited without explicit authorization)",
+      "Automated browser DOM execution inside headless Chromium (verified via node:* static dependency scan and FetchTransport)"
+    ]
+  }
+}
