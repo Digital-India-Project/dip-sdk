@@ -46,11 +46,63 @@ The existing DIPINDIA platform remains the product and data authority. SDK metho
 ## Documents
 
 - [Project plan](docs/PROJECT_PLAN.md)
+- [Audit report](docs/AUDIT_REPORT.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [API coverage matrix](docs/API_COVERAGE.md)
+- [Quickstart](docs/QUICKSTART.md)
+- [Authentication](docs/AUTHENTICATION.md)
+- [Error handling](docs/ERROR_HANDLING.md)
+- [Pagination & retries](docs/PAGINATION.md)
+- [Webhooks](docs/WEBHOOKS.md)
+- [Compatibility matrix](docs/COMPATIBILITY.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Security](docs/SECURITY.md)
 - [Integration](docs/INTEGRATION.md)
+- [Contributing](docs/CONTRIBUTING.md)
+- [Release process](docs/RELEASE_PROCESS.md)
 
 ## Governance
 
 Work on review branches only. No main/master push, merge, deployment, package publication, production API invocation or credential changes without explicit approval.
+
+---
+
+## SDK Foundation (`development/sdk-foundation` — v0.2.0 Candidate)
+
+### Entrypoints
+
+- `@digital-india/sdk` — Isomorphic (browser & Node.js) client exporting `DIPClient`, resource clients, typed errors, pagination helpers, redaction utilities, and preserved legacy v0.1.0 exports (`ApiClient`, `ApiSathiClient`, `DatabaseClient`, `StorageClient`).
+- `@digital-india/sdk/webhooks` — Server-only (`node:crypto`) webhook signature verification and replay-protection utilities. Never import in browser bundles.
+
+### Verified Resource Clients (`dip-api` `/api/v1`)
+
+| Property | Class | Scope |
+|---|---|---|
+| `client.health` | `HealthClient` | `/health`, `/metrics`, `/openapi.json` |
+| `client.services` | `ServicesClient` | `/services`, `/services/:serviceId` + async pagination |
+| `client.products` | `ProductsClient` | `/products`, `/products/:productId` + async pagination |
+| `client.applications` | `ApplicationsClient` | `/applications`, `/applications/:id`, `/submit` |
+| `client.workflow` | `WorkflowClient` | `/applications/:id/transition` |
+| `client.documents` | `DocumentsClient` | `/applications/:id/documents`, `/upload-intent`, signed-URL upload helper |
+| `client.payments` | `PaymentsClient` | `/payments/orders`, `/orders/:id`, `/refunds` (strict idempotency, no blind retries) |
+| `client.webhooks` | `WebhooksClient` | `/webhooks/subscriptions`, `/deliveries` |
+| `client.integrations` | `IntegrationsClient` | `/integrations/providers`, `/sandbox-check` |
+| `client.sandbox` | `SandboxAuthClient` | `/sandbox/token` (non-production sandbox only) |
+
+### Legacy v0.1.0 Exports (Preserved)
+
+- `ApiClient` & `DipApiError` — Preserved Axios wrapper.
+- `ApiSathiClient` — Preserved `getStatus()` plus `getGatewayStatus()` targeting DIPINDIA's `/api/v1/apisathi/status`.
+- `DatabaseClient` (`@deprecated`) — Preserved export only; neither `dip-api` nor `DIPINDIA` exposes `/data/:collection`.
+- `StorageClient` (`@deprecated`) — Preserved export only; use `client.documents` for `dip-api` document flows.
+
+### Verification Commands
+
+```bash
+npm run generate          # Regenerate src/generated/openapi-types.ts from src/api-spec.json
+npm run typecheck         # Strict TypeScript check
+npm run lint              # Typecheck + ESLint
+npm run build             # Build ESM (dist/esm) + CJS (dist/cjs) + .d.ts declarations
+npm test                  # Run unit, integration, contract, and compatibility tests
+```
+

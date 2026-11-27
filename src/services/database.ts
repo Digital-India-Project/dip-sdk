@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ApiClient } from '../client';
+import { ApiClient } from '../client.js';
 
 export const QueryResultSchema = z.object({
   items: z.array(z.record(z.unknown())),
@@ -9,8 +9,10 @@ export const QueryResultSchema = z.object({
 export type QueryResult = z.infer<typeof QueryResultSchema>;
 
 /**
- * API-backed resource client for approved DIPINDIA data endpoints.
- * Does not hold direct database credentials or connect to production databases.
+ * @deprecated Preserved solely for backwards-compatible exports from v0.1.0.
+ * Neither `dip-api` nor `DIPINDIA` exposes a generic `/data/:collection` endpoint,
+ * and external SDKs must never hold direct database credentials.
+ * Use domain clients on `DIPClient` (`client.services`, `client.applications`, etc.) instead.
  */
 export class DatabaseClient {
   constructor(private readonly client: ApiClient) {}

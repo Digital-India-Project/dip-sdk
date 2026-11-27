@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ApiClient } from '../client';
+import { ApiClient } from '../client.js';
 
 export const StorageObjectMetaSchema = z.object({
   key: z.string(),
@@ -10,8 +10,9 @@ export const StorageObjectMetaSchema = z.object({
 export type StorageObjectMeta = z.infer<typeof StorageObjectMetaSchema>;
 
 /**
- * API-backed storage resource client for approved DIPINDIA storage endpoints.
- * Does not hold direct object-storage credentials.
+ * @deprecated Preserved for backwards-compatible exports from v0.1.0.
+ * For `dip-api` `/api/v1` document metadata and upload intents, use `client.documents`
+ * (`DocumentsClient`). Never store direct R2/object-storage credentials in SDK clients.
  */
 export class StorageClient {
   constructor(private readonly client: ApiClient) {}

@@ -1,0 +1,46 @@
+name: DIP SDK CI
+
+on:
+  pull_request:
+    branches: ['*']
+  push:
+    branches:
+      - 'development/**'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, Lint, Build, Test & Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify OpenAPI type generation drift
+        run: npm run check:types-drift && git diff --exit-code src/generated/openapi-types.ts
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build ESM and CJS targets
+        run: npm run build
+
+      - name: Run full test suite (unit, integration, contract, compatibility)
+        run: npm test
+
+      - name: Dependency audit (non-blocking advisory or high+)
+        run: npm audit --audit-level=high

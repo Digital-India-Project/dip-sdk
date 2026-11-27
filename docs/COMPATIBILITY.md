@@ -1,0 +1,15 @@
+# Ecosystem Compatibility Matrix
+
+This document defines the boundary between `@digital-india/sdk` (`dip-sdk`) and sibling repositories in the Digital India Project ecosystem. No circular dependencies are permitted.
+
+| Repository | Ecosystem Role | Existing Integration | Proposed Integration | Missing Dependency | Required Repo Change | Status |
+|---|---|---|---|---|---|---|
+| `dip-api` | Versioned `/api/v1` API gateway & OpenAPI authority | OpenAPI 3.1.0 snapshot (`src/api-spec.json`) & all 25 `/api/v1` operations mapped in `DIPClient` | Deterministic CI OpenAPI sync from `dip-api` release tags | Live non-sandbox `dip-api` deployment & live DIPINDIA bridge | Publish versioned `openapi.json` artifact from `dip-api` | **Verified (Sandbox contract aligned)** |
+| `DIPINDIA` | Functional product & data authority (Cloudflare Worker + UI) | `ApiSathiClient.getGatewayStatus()` aligns with `/api/v1/apisathi/status` | `dip-api` bridges live routes to `DIPINDIA` rather than SDK calling `DIPINDIA` internals directly | Server-side adapter bridge between `dip-api` and `DIPINDIA` | None in `dip-sdk`; configure adapter in `dip-api` | **Partial / Bridged via dip-api** |
+| `dip-core` | Pure domain types, integer paise `Money`, `DomainError` | SDK `MoneySchema` uses integer minor currency units (`amount_minor`, `INR/USD/EUR`) compatible with `dip-core` paise rules | Optional type-only alignment for domain enums/codes | Published `@digital-india/core` package | None at runtime (avoid coupling external SDK to internal engine) | **Compatible by schema** |
+| `dip-security` | Token verification, RBAC policies, redaction standards | SDK enforces HTTPS, origin-bound Bearer tokens, redirect blocking, header/query redaction, HMAC verification | Align Firebase Auth / JWT verifier specs when `dip-security` publishes schemas | Concrete JWT/Firebase audience/issuer policy docs in `dip-security` | Document issuer/audience claims in `dip-security` | **Compatible (Docs baseline)** |
+| `dip-infrastructure` | Hosting, TLS, secrets, edge standards | `.env.example` keeps secrets external; HTTPS enforced in production | Add production gateway URL conventions | Published environment domain map | None required for SDK foundation | **Aligned** |
+| `dip-ui` | Frontend UI components | Zero UI coupling; browser-safe `@digital-india/sdk` entrypoint has zero `node:*` imports | Consuming apps may pass in-memory tokens from UI auth state to `DIPClient` | None | None | **Compatible** |
+| `dip-automation` | Automation workflows | Uses `@digital-india/sdk` server-side with `RefreshableTokenProvider` | Scheduled workflow checks via `DIPClient` | Machine client credentials contract | Define machine actor scopes in `dip-api`/`dip-security` | **Planned** |
+| `dip-docs` | Centralized developer docs | SDK docs & OpenAPI metadata ready for ingestion | Sync `docs/` and `src/api-spec.json` into docs portal | Portal build ingestion | None | **Ready** |
+| `dip-status` | Operational status visibility | `client.health.getHealth()` consumes `/api/v1/health` | Optional status probe integration | None | None | **Compatible** |

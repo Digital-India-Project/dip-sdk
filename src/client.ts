@@ -1,12 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import { z } from 'zod';
 
-export type TokenProvider = () => string | Promise<string>;
+export type LegacyTokenProvider = () => string | Promise<string>;
 
 export interface ApiClientConfig {
   baseUrl: string;
   timeoutMs?: number;
-  getToken?: TokenProvider;
+  getToken?: LegacyTokenProvider;
   userAgent?: string;
   allowInsecureHttpInDev?: boolean;
 }
@@ -35,10 +35,15 @@ const ApiClientConfigSchema = z.object({
   allowInsecureHttpInDev: z.boolean().optional(),
 });
 
+/**
+ * Legacy Axios-based client preserved from v0.1.0.
+ * For new integrations, prefer `DIPClient` which provides Fetch transport,
+ * typed resource modules, bounded retries, redaction, and pagination helpers.
+ */
 export class ApiClient {
   private readonly http: AxiosInstance;
   private readonly baseOrigin: string;
-  private readonly getToken?: TokenProvider;
+  private readonly getToken?: LegacyTokenProvider;
 
   constructor(config: ApiClientConfig) {
     const parsed = ApiClientConfigSchema.parse({
@@ -49,6 +54,9 @@ export class ApiClient {
     });
 
     const url = new URL(parsed.baseUrl);
+    if (url.username || url.password) {
+      throw new Error('ApiClient baseUrl must not contain embedded credentials');
+    }
     if (url.protocol !== 'https:' && !parsed.allowInsecureHttpInDev) {
       throw new Error(
         'ApiClient requires HTTPS baseUrl unless allowInsecureHttpInDev is true'
@@ -107,7 +115,9 @@ export class ApiClient {
         const requestId =
           typeof axiosErr.response?.headers?.['x-request-id'] === 'string'
             ? axiosErr.response.headers['x-request-id']
-            : undefined;
+            : typeof axiosErr.response?.headers?.['x-correlation-id'] === 'string'
+              ? axiosErr.response.headers['x-correlation-id']
+              : undefined;
 
         throw new DipApiError(
           axiosErr.response?.data?.message || axiosErr.message || 'API request failed',

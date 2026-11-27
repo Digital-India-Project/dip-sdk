@@ -1,24 +1,60 @@
 {
   "name": "@digital-india/sdk",
-  "version": "0.1.0",
-  "description": "Digital India Project SDK - TypeScript client for DIPINDIA API services",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "0.2.0",
+  "description": "Digital India Project SDK - TypeScript client for approved Digital India Project API services",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./webhooks": {
+      "types": "./dist/esm/server-sdk.d.ts",
+      "import": "./dist/esm/server-sdk.js",
+      "require": "./dist/cjs/server-sdk.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc",
-    "lint": "tsc --noEmit",
-    "generate": "tsx scripts/generate-types.ts"
+    "start": "node dist/cjs/server.js",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.build.cjs.json && node scripts/write-dist-manifests.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit && eslint .",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:contract": "vitest run tests/contract",
+    "test:compat": "vitest run tests/compatibility",
+    "generate": "tsx scripts/generate-types.ts",
+    "check:types-drift": "tsx scripts/generate-types.ts"
   },
   "dependencies": {
     "axios": "^1.7.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.11",
+    "eslint": "^10.16.0",
     "tsx": "^4.23.15",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.74.0",
+    "vitest": "^5.1.2"
   }
 }

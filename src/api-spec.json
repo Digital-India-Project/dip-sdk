@@ -1,0 +1,235 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DIP API — Digital India Project Gateway",
+    "version": "1.0.0-foundation",
+    "description": "Versioned API boundary (/api/v1) for Digital India Project services. Snapshot aligned with Digital-India-Project/dip-api src/server/routes/v1/openapi.ts."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Versioned DIP API Gateway"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Gateway health status",
+        "tags": ["Observability"],
+        "responses": { "200": { "description": "Gateway is healthy" } }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "summary": "Non-sensitive route-level metrics snapshot",
+        "tags": ["Observability"],
+        "responses": { "200": { "description": "Aggregated request and error counts" } }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "operationId": "getOpenApiSpec",
+        "summary": "OpenAPI 3.1.0 specification generated from implemented routes",
+        "tags": ["Documentation"],
+        "responses": { "200": { "description": "OpenAPI JSON document" } }
+      }
+    },
+    "/services": {
+      "get": {
+        "operationId": "listServices",
+        "summary": "List service catalogue items (paginated, filterable)",
+        "tags": ["Catalogue"],
+        "responses": { "200": { "description": "Paginated service catalogue" } }
+      }
+    },
+    "/services/{serviceId}": {
+      "get": {
+        "operationId": "getServiceById",
+        "summary": "Get service catalogue item by ID",
+        "tags": ["Catalogue"],
+        "responses": { "200": { "description": "Service details" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "List product catalogue items",
+        "tags": ["Catalogue"],
+        "responses": { "200": { "description": "Paginated product catalogue" } }
+      }
+    },
+    "/products/{productId}": {
+      "get": {
+        "operationId": "getProductById",
+        "summary": "Get product catalogue item by ID",
+        "tags": ["Catalogue"],
+        "responses": { "200": { "description": "Product details" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/applications": {
+      "get": {
+        "operationId": "listApplications",
+        "summary": "List tenant-scoped applications",
+        "tags": ["Applications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Paginated applications" } }
+      },
+      "post": {
+        "operationId": "createApplication",
+        "summary": "Create draft or submitted application (Idempotency-Key required)",
+        "tags": ["Applications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Application created" } }
+      }
+    },
+    "/applications/{applicationId}": {
+      "get": {
+        "operationId": "getApplicationById",
+        "summary": "Get application by ID (enforces tenant & ownership)",
+        "tags": ["Applications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Application record" } }
+      },
+      "patch": {
+        "operationId": "updateApplication",
+        "summary": "Update draft/action-required application",
+        "tags": ["Applications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Updated application" } }
+      }
+    },
+    "/applications/{applicationId}/submit": {
+      "post": {
+        "operationId": "submitApplication",
+        "summary": "Submit draft application (Idempotency-Key required)",
+        "tags": ["Applications"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Submitted application" } }
+      }
+    },
+    "/applications/{applicationId}/transition": {
+      "post": {
+        "operationId": "transitionApplicationWorkflow",
+        "summary": "Transition application workflow stage (requires workflow:review scope)",
+        "tags": ["Workflow"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Workflow transitioned" } }
+      }
+    },
+    "/applications/{applicationId}/documents": {
+      "get": {
+        "operationId": "listApplicationDocuments",
+        "summary": "List document metadata for an application",
+        "tags": ["Documents"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Document list" } }
+      }
+    },
+    "/applications/{applicationId}/documents/upload-intent": {
+      "post": {
+        "operationId": "createDocumentUploadIntent",
+        "summary": "Create validated document upload intent (Idempotency-Key required)",
+        "tags": ["Documents"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Upload intent created" } }
+      }
+    },
+    "/payments/orders": {
+      "post": {
+        "operationId": "createPaymentOrder",
+        "summary": "Create payment order in minor currency units (Idempotency-Key required)",
+        "tags": ["Payments"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Payment order created" } }
+      }
+    },
+    "/payments/orders/{orderId}": {
+      "get": {
+        "operationId": "getPaymentOrder",
+        "summary": "Get payment order status",
+        "tags": ["Payments"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Payment order details" } }
+      }
+    },
+    "/payments/orders/{orderId}/refunds": {
+      "post": {
+        "operationId": "requestPaymentRefund",
+        "summary": "Request payment refund (requires payments:refund scope)",
+        "tags": ["Payments"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Refund requested" } }
+      }
+    },
+    "/payments/webhooks/cashfree": {
+      "post": {
+        "operationId": "receiveCashfreeWebhook",
+        "summary": "Receive Cashfree webhook event (HMAC signature + replay + deduplication verified)",
+        "tags": ["Payments"],
+        "responses": { "200": { "description": "Webhook processed or deduplicated" } }
+      }
+    },
+    "/webhooks/subscriptions": {
+      "get": {
+        "operationId": "listWebhookSubscriptions",
+        "summary": "List tenant webhook subscriptions",
+        "tags": ["Webhooks"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Webhook subscriptions" } }
+      },
+      "post": {
+        "operationId": "createWebhookSubscription",
+        "summary": "Register HTTPS webhook subscription (SSRF-validated)",
+        "tags": ["Webhooks"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "201": { "description": "Subscription registered" } }
+      }
+    },
+    "/webhooks/deliveries": {
+      "get": {
+        "operationId": "listWebhookDeliveries",
+        "summary": "List tenant webhook delivery history",
+        "tags": ["Webhooks"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Delivery records" } }
+      }
+    },
+    "/integrations/providers": {
+      "get": {
+        "operationId": "listIntegrationProviders",
+        "summary": "List registered external provider adapter contracts & readiness",
+        "tags": ["Integrations"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Provider metadata list" } }
+      }
+    },
+    "/integrations/providers/{providerId}/sandbox-check": {
+      "post": {
+        "operationId": "executeProviderSandboxCheck",
+        "summary": "Execute sandbox provider check (non-production synthetic check)",
+        "tags": ["Integrations"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Sandbox check result" } }
+      }
+    },
+    "/sandbox/token": {
+      "post": {
+        "operationId": "mintSandboxToken",
+        "summary": "Mint synthetic sandbox bearer token (non-production only)",
+        "tags": ["Sandbox"],
+        "responses": { "200": { "description": "Synthetic bearer token" } }
+      }
+    }
+  }
+}

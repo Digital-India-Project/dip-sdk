@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "dist",
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist/esm",
     "rootDir": "src"
   },
   "include": ["src/**/*"]
